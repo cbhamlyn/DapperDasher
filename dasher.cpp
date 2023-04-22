@@ -9,7 +9,34 @@ struct AnimData
     float updateTime;
     float runningTime;
 };
-    
+
+bool isOnGround(AnimData data, int windowHeight)
+{
+    return data.pos.y >= windowHeight - data.rec.height;
+};
+
+AnimData updateAnimData(AnimData data, float deltaTime, int maxFrame)
+{
+    // update running time
+    data.runningTime += deltaTime;
+    // if running time is greater than update time, we need to update the animation frame
+    if (data.runningTime >= data.updateTime)
+    {
+        // need to reset running time
+        data.runningTime = 0.0;
+        // update the animation frame
+        data.rec.x = data.frame * data.rec.width;
+        // update the frame counter
+        data.frame++;
+        // if we're on the 6th frame, we need to reset the frame counter to zero
+        if (data.frame > maxFrame)
+        {
+            data.frame = 0;
+        }
+    }
+    return data;
+} ;
+
 int main()
 {
     // Window dimensions
@@ -87,7 +114,7 @@ int main()
         
         // Game logic starts
         // check for ground
-        if (scarfyData.pos.y >= winDim[1] - scarfyData.rec.height)
+        if (isOnGround(scarfyData, winDim[1]))
         {
             scarfy_vel = 0;
             isInAir = false;
@@ -113,50 +140,18 @@ int main()
 
         if (!isInAir)
         {
-            // update running time
-            scarfyData.runningTime += dT;
-            // if running time is greater than update time, we need to update the animation frame
-            if (scarfyData.runningTime >= scarfyData.updateTime)
-            {
-                // need to reset running time
-                scarfyData.runningTime = 0.0;
-                // update the scarfy frame
-                scarfyData.rec.x = scarfyData.frame * scarfyData.rec.width;
-                // update the frame counter
-                scarfyData.frame++;
-                // if we're on the 6th frame, we need to reset the frame counter to zero
-                if (scarfyData.frame > 5)
-                {
-                    scarfyData.frame = 0;
-                }
-            }
-        }
-
-        // Nebula animation
-        for (int i = 0; i < sizeOfNebulae; i++) {
-            // update running time
-            nebulae[i].runningTime += dT;
-            if (nebulae[i].runningTime >= nebulae[i].updateTime)
-            {
-                // need to reset running time
-                nebulae[i].runningTime = 0.0;
-                // update the scarfy frame
-                nebulae[i].rec.x = nebulae[i].frame * nebulae[i].rec.width;
-                // update the frame counter
-                nebulae[i].frame++;
-                // if we're on the 6th frame, we need to reset the frame counter to zero
-                if (nebulae[i].frame > 7)
-                {
-                    nebulae[i].frame = 0;
-                }
-            }
-        }
-        for (int i = 0; i < sizeOfNebulae; i++) {
-            // Draw Nebula/Hazard
-            DrawTextureRec(nebula, nebulae[i].rec, nebulae[i].pos, WHITE);
+            // update Scarfy's animation frame
+            scarfyData = updateAnimData(scarfyData, dT, 5);
         }
         // Draw Scarfy
         DrawTextureRec(scarfy, scarfyData.rec, scarfyData.pos, WHITE);
+
+        // Nebula animation
+        for (int i = 0; i < sizeOfNebulae; i++) {
+            nebulae[i] = updateAnimData(nebulae[i], dT, 7);
+            // Draw Nebula/Hazard
+            DrawTextureRec(nebula, nebulae[i].rec, nebulae[i].pos, WHITE);
+        }
         // Game logic ends
         EndDrawing();        
     }
