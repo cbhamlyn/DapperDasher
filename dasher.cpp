@@ -68,6 +68,9 @@ int main()
         nebulae[i].updateTime = 1.0 / (12.0 + i );
     };
 
+    // make FinishLine
+    float finishLine{nebulae[sizeOfNebulae - 1].pos.x};
+
     // nebula X velocity (pixels/second)
     int neb_vel{-200};
 
@@ -103,6 +106,16 @@ int main()
     // This is scarfy's rectangle's velocity
     int scarfy_vel{0};
 
+    // Background Texture
+    Texture2D background = LoadTexture("textures/far-buildings.png");
+    float bgX{};
+    // Midground Texture
+    Texture2D midground = LoadTexture("textures/back-buildings.png");
+    float mgX{};
+    // Background Texture
+    Texture2D foreground = LoadTexture("textures/foreground.png");
+    float fgX{};
+
     SetTargetFPS(60); 
     while (!WindowShouldClose())
     {
@@ -111,7 +124,41 @@ int main()
         
         BeginDrawing();
         ClearBackground(WHITE);
+        // Scroll background
+        bgX -= 20 * dT;
+        if (bgX <= -background.width * 2)
+        {
+            bgX = 0.0;
+        }
+        mgX -= 40 * dT;
+        if (mgX <= -midground.width * 2)
+        {
+            mgX = 0.0;
+        }
+        fgX -= 80 * dT;
+        if (fgX <= -foreground.width * 2)
+        {
+            fgX = 0.0;
+        }
+
+        // Draw background
+        Vector2 bg1Pos{bgX, 0.0};
+        Vector2 bg2Pos{bgX + background.width * 2, 0.0};
+        DrawTextureEx(background, bg1Pos, 0.0, 2.0, WHITE);
+        DrawTextureEx(background, bg2Pos, 0.0, 2.0, WHITE);
         
+        // Draw Midground
+        Vector2 mg1Pos{mgX, 0.0};
+        Vector2 mg2Pos{mgX + background.width * 2, 0.0};
+        DrawTextureEx(midground, mg1Pos, 0.0, 2.0, WHITE);
+        DrawTextureEx(midground, mg2Pos, 0.0, 2.0, WHITE);
+
+        // Draw Midground
+        Vector2 fg1Pos{fgX, 0.0};
+        Vector2 fg2Pos{fgX + foreground.width * 2, 0.0};
+        DrawTextureEx(foreground, fg1Pos, 0.0, 2.0, WHITE);
+        DrawTextureEx(foreground, fg2Pos, 0.0, 2.0, WHITE);
+
         // Game logic starts
         // check for ground
         if (isOnGround(scarfyData, winDim[1]))
@@ -135,6 +182,8 @@ int main()
          for (int i = 0; i < sizeOfNebulae; i++) {
             nebulae[i].pos.x += neb_vel * dT;
          }
+        // update Finishline position
+        finishLine += neb_vel * dT;
         // update Scarfy position
         scarfyData.pos.y += scarfy_vel * dT;
 
@@ -157,5 +206,8 @@ int main()
     }
     UnloadTexture(scarfy);
     UnloadTexture(nebula);
+    UnloadTexture(background);
+    UnloadTexture(midground);
+    UnloadTexture(foreground);
     CloseWindow();
 }
