@@ -116,6 +116,9 @@ int main()
     Texture2D foreground = LoadTexture("textures/foreground.png");
     float fgX{};
 
+    // collision
+    bool collision{false};
+
     SetTargetFPS(60); 
     while (!WindowShouldClose())
     {
@@ -187,20 +190,57 @@ int main()
         // update Scarfy position
         scarfyData.pos.y += scarfy_vel * dT;
 
+       for (AnimData nebula : nebulae)
+        {
+            // need to remove padding/whitespace around nebula
+            float pad{50};
+            Rectangle nebRec{
+                nebula.pos.x + 20,
+                nebula.pos.y + 20,
+                nebula.rec.width - 2 * pad,
+                nebula.rec.height - 2 * pad
+            };
+            Rectangle scarfyRec{
+                scarfyData.pos.x,
+                scarfyData.pos.y,
+                scarfyData.rec.width,
+                scarfyData.rec.height
+            };
+            // check for collision
+            if (CheckCollisionRecs(nebRec, scarfyRec))
+            {
+                collision = true;
+            }
+        }
+
         if (!isInAir)
         {
             // update Scarfy's animation frame
             scarfyData = updateAnimData(scarfyData, dT, 5);
         }
-        // Draw Scarfy
-        DrawTextureRec(scarfy, scarfyData.rec, scarfyData.pos, WHITE);
-
         // Nebula animation
         for (int i = 0; i < sizeOfNebulae; i++) {
             nebulae[i] = updateAnimData(nebulae[i], dT, 7);
-            // Draw Nebula/Hazard
-            DrawTextureRec(nebula, nebulae[i].rec, nebulae[i].pos, WHITE);
         }
+        if (collision)
+        {
+            // END GAME!
+            DrawText("Game Over!", winDim[0] / 4, winDim[1] / 2, 40, RED);
+        }
+        else if (scarfyData.pos.x > finishLine)
+        {
+            DrawText("You Win!", winDim[0] / 4, winDim[1] / 2, 40, GREEN);
+        }
+        else
+        {
+            // Draw Scarfy
+            DrawTextureRec(scarfy, scarfyData.rec, scarfyData.pos, WHITE);
+            for (int i = 0; i < sizeOfNebulae; i++) {
+                // Draw Nebula/Hazard
+                DrawTextureRec(nebula, nebulae[i].rec, nebulae[i].pos, WHITE);
+            }
+        }
+
         // Game logic ends
         EndDrawing();        
     }
